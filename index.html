@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ContactWeb - Formulario de Contacto</title>
+    <!-- SDK de EmailJS v4 -->
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+    <style>
+        :root {
+            --azul: #2a5298;
+            --violeta: #7c3aed;
+            --texto: #1e293b;
+            --gris: #64748b;
+            --borde: #e2e8f0;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, sans-serif; }
+        html { scroll-behavior: smooth; }
+        body { color: var(--texto); background: #f5f7fb; line-height: 1.6; }
+
+        nav {
+            position: sticky; top: 0; z-index: 50;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 14px 6%;
+            background: rgba(15, 23, 42, .9);
+            backdrop-filter: blur(10px);
+        }
+
+        .logo { display: flex; align-items: center; gap: 10px; color: #fff; font-weight: 800; text-decoration: none; }
+        .logo i {
+            display: grid; place-items: center; width: 36px; height: 36px;
+            border-radius: 10px; font-style: normal;
+            background: linear-gradient(135deg, var(--azul), var(--violeta));
+        }
+
+        .nav-links { display: flex; gap: 24px; list-style: none; }
+        .nav-links a { color: #cbd5e1; text-decoration: none; font-size: .9rem; font-weight: 600; }
+        .nav-links a:hover { color: #fff; }
+
+        .hero {
+            position: relative; overflow: hidden; text-align: center;
+            padding: 90px 6% 130px; color: #fff;
+            background: linear-gradient(135deg, #0f172a, #1e3c72 50%, var(--azul));
+            background-size: 200% 200%;
+            animation: shift 14s ease infinite;
+        }
+
+        .hero::after {
+            content: ''; position: absolute; width: 340px; height: 340px; border-radius: 50%;
+            filter: blur(90px); opacity: .5; background: var(--violeta);
+            bottom: -120px; right: -60px;
+        }
+
+        @keyframes shift { 0%,100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
+
+        .hero > div { position: relative; z-index: 1; max-width: 680px; margin: 0 auto; }
+        .badge {
+            display: inline-block; padding: 6px 16px; margin-bottom: 20px;
+            font-size: .78rem; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;
+            border-radius: 50px; background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.25);
+        }
+
+        .hero h1 { font-size: clamp(2rem, 5vw, 3rem); font-weight: 800; line-height: 1.15; margin-bottom: 18px; }
+        .hero h1 em {
+            font-style: normal;
+            background: linear-gradient(90deg, #7dd3fc, #c4b5fd);
+            -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+        }
+
+        .hero p { color: #cbd5e1; max-width: 520px; margin: 0 auto 30px; }
+
+        .cta {
+            display: inline-flex; gap: 8px; padding: 14px 32px;
+            color: #fff; font-weight: 700; text-decoration: none; border-radius: 50px;
+            background: linear-gradient(135deg, var(--azul), var(--violeta));
+            box-shadow: 0 12px 30px rgba(42,82,152,.5);
+            transition: transform .2s, box-shadow .2s;
+        }
+
+        .cta:hover { transform: translateY(-3px); box-shadow: 0 18px 38px rgba(42,82,152,.6); }
+
+        .contacto {
+            display: grid; grid-template-columns: 1fr 1.15fr; gap: 30px;
+            max-width: 1050px; margin: -70px auto 0; padding: 0 6% 80px;
+            position: relative; z-index: 2; align-items: start;
+        }
+
+        .info {
+            padding: 32px 28px; border-radius: 20px; color: #fff;
+            background: linear-gradient(160deg, #1e3c72, var(--violeta));
+            box-shadow: 0 24px 50px rgba(30,60,114,.35);
+        }
+
+        .info h2 { font-size: 1.3rem; margin-bottom: 10px; }
+        .info > p { color: rgba(255,255,255,.8); font-size: .9rem; margin-bottom: 24px; }
+        .info li { display: flex; gap: 12px; align-items: center; margin-bottom: 16px; }
+        .info li i {
+            display: grid; place-items: center; width: 40px; height: 40px; flex-shrink: 0;
+            border-radius: 12px; font-style: normal; font-size: 1.1rem;
+            background: rgba(255,255,255,.16);
+        }
+
+        .info strong { display: block; font-size: .9rem; }
+        .info small { color: rgba(255,255,255,.72); font-size: .8rem; }
+
+        .box {
+            background: #fff; padding: 34px 32px; border-radius: 20px;
+            border: 1px solid var(--borde); box-shadow: 0 24px 60px rgba(15,23,42,.15);
+        }
+
+        .box h2 { font-size: 1.35rem; margin-bottom: 6px; }
+        .subtitle { color: var(--gris); font-size: .9rem; margin-bottom: 24px; }
+        .field { margin-bottom: 18px; }
+
+        label { display: block; font-size: .85rem; font-weight: 600; color: #475569; margin-bottom: 7px; }
+
+        input, textarea {
+            width: 100%; padding: 12px 14px; font-size: .95rem; color: var(--texto);
+            border: 2px solid var(--borde); border-radius: 10px; background: #f8fafc;
+            outline: none; transition: border-color .25s, box-shadow .25s, background .25s;
+        }
+
+        input::placeholder, textarea::placeholder { color: #94a3b8; }
+        input:focus, textarea:focus {
+            border-color: var(--azul); background: #fff; box-shadow: 0 0 0 4px rgba(42,82,152,.15);
+        }
+
+        textarea { resize: vertical; min-height: 120px; }
+
+        button {
+            width: 100%; padding: 15px; margin-top: 10px; cursor: pointer;
+            color: #fff; font-size: 1rem; font-weight: 700; letter-spacing: .4px;
+            border: none; border-radius: 10px;
+            background: linear-gradient(135deg, var(--azul), var(--violeta)); background-size: 200% 200%;
+            box-shadow: 0 8px 20px rgba(42,82,152,.35);
+            transition: transform .2s, box-shadow .2s, background-position .4s;
+        }
+
+        button:hover { transform: translateY(-2px); box-shadow: 0 12px 26px rgba(42,82,152,.45); background-position: 100% 50%; }
+        button:disabled { opacity: .7; cursor: not-allowed; transform: none; }
+
+        footer { text-align: center; padding: 26px 6%; font-size: .85rem; color: #94a3b8; background: #0f172a; }
+        footer strong { color: #e2e8f0; }
+
+        .toast {
+            position: fixed; bottom: 28px; left: 50%; z-index: 100;
+            display: flex; align-items: center; gap: 10px;
+            padding: 14px 22px; border-radius: 12px;
+            color: #fff; font-weight: 600; font-size: .9rem;
+            background: #16a34a; box-shadow: 0 14px 30px rgba(0,0,0,.3);
+            transform: translate(-50%, 120%); opacity: 0; pointer-events: none;
+            transition: transform .4s cubic-bezier(.68,-.55,.27,1.55), opacity .4s;
+        }
+
+        .toast.error { background: #dc2626; }
+        .toast.show { transform: translate(-50%, 0); opacity: 1; }
+        .toast i {
+            display: grid; place-items: center; width: 22px; height: 22px; font-style: normal;
+            border-radius: 50%; font-size: .8rem; background: rgba(255,255,255,.25);
+        }
+
+        @media (max-width: 860px) { .contacto { grid-template-columns: 1fr; margin-top: -50px; } }
+        @media (max-width: 560px) { .nav-links { gap: 16px; } .hero { padding: 70px 6% 110px; } .box, .info { padding: 26px 20px; } }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <a href="#inicio" class="logo"><i>&#128231;</i> ContactWeb</a>
+        <ul class="nav-links">
+            <li><a href="#inicio">Inicio</a></li>
+            <li><a href="#contacto">Contacto</a></li>
+        </ul>
+    </nav>
+
+    <header class="hero" id="inicio">
+        <div>
+            <span class="badge">Examen Parcial</span>
+            <h1>Ponte en <em>contacto</em> con nosotros</h1>
+            <p>Envía tus dudas, sugerencias o el enlace de tu repositorio de GitHub. Te responderemos pronto.</p>
+            <a href="#contacto" class="cta">Enviar un mensaje &#8594;</a>
+        </div>
+    </header>
+
+    <section class="contacto" id="contacto">
+        <aside class="info">
+            <h2>Información de contacto</h2>
+            <p>Completa el formulario y nos pondremos en contacto contigo.</p>
+            <ul>
+                <li><i>&#9993;</i><div><strong>Correo</strong><small>contacto@ejemplo.com</small></div></li>
+                <li><i>&#128172;</i><div><strong>Respuesta rápida</strong><small>En menos de 24 horas</small></div></li>
+                <li><i>&#128187;</i><div><strong>GitHub</strong><small>Comparte tu repositorio</small></div></li>
+            </ul>
+        </aside>
+
+        <div class="box">
+            <h2>Formulario de Contacto</h2>
+            <p class="subtitle">Los campos marcados son obligatorios.</p>
+            <form id="form">
+                <div class="field">
+                    <label for="name">Nombre de quien envía</label>
+                    <input type="text" name="name" id="name" placeholder="Ej. María Pérez" required>
+                </div>
+                <div class="field">
+                    <label for="email">Correo de destino</label>
+                    <input type="email" name="email" id="email" placeholder="correo@ejemplo.com" required>
+                </div>
+                <div class="field">
+                    <label for="message">Mensaje / Enlace de GitHub</label>
+                    <textarea name="message" id="message" rows="4" placeholder="Escribe tu mensaje o pega el enlace de tu repositorio..." required></textarea>
+                </div>
+                <button type="submit" id="button">Enviar Mensaje</button>
+            </form>
+        </div>
+    </section>
+
+    <footer>&copy; 2026 <strong>ContactWeb</strong> — Todos los derechos reservados.</footer>
+
+    <div class="toast" id="toast">
+        <i id="toast-icon">&#10004;</i><span class="toast-text" id="toast-text">¡Correo enviado con éxito!</span>
+    </div>
+
+    <!-- Archivo JS externo -->
+    <script src="script.js"></script>
+</body>
+</html>
